@@ -271,7 +271,13 @@ button,input{font:inherit}
     fromHash();
     setTimeout(() => pwEl.blur(), 0);
   }
+  const insecure = !(window.isSecureContext && crypto.subtle);
+  const httpsUrl = 'https://' + location.host + location.pathname + location.hash;
   async function attempt(pw, quiet){
+    if (insecure){
+      err.innerHTML = 'Sidan måste öppnas via https för att kunna låsas upp: <a href="' + httpsUrl + '" style="color:var(--un)">' + httpsUrl + '</a>';
+      return;
+    }
     go.disabled = true; err.textContent = '';
     try {
       const html = await decrypt(pw);
@@ -288,7 +294,7 @@ button,input{font:inherit}
   }
   form.addEventListener('submit', e => { e.preventDefault(); if (pwEl.value) attempt(pwEl.value, false); });
   try { const s = sessionStorage.getItem('skb2609'); if (s) attempt(s, true); } catch {}
-  if (!crypto.subtle) err.textContent = 'Kräver https eller en modern webbläsare.';
+  if (insecure) err.innerHTML = 'Öppna via https: <a href="' + httpsUrl + '" style="color:var(--un)">' + httpsUrl + '</a>';
 })();
 </script>
 </body>
